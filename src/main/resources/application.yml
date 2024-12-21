@@ -1,0 +1,59 @@
+
+server:
+  servlet:
+     context-path: /api/${raft.api.version}
+
+raft:
+  id: 1
+  api:
+    version: v1
+  heartbeat-timeout: 2
+
+network:
+  services:
+    -
+      name: 1
+      host: localhost
+      port: 8081
+      version: v1
+    -
+      name: 2
+      host: localhost
+      port: 8082
+      version: v1
+    -
+      name: 3
+      host: localhost
+      port: 8083
+      version: v1
+#    -
+#      name: 4
+#      host: raft-server-4
+#      port: 8084
+#      version: v1
+#    -
+#      name: 5
+#      host: raft-server-5
+#      port: 8085
+#      version: v1
+
+spring:
+  application.name: raft-server
+  hateoas:
+    use-hal-as-default-json-media-type: false
+
+logging:
+  level:
+    com.network.http.rest_template:  ERROR
+
+  main:
+    sources: com.raft.server.ServerApplication
+---
+spring:
+  profiles: debug
+
+logging:
+  level:
+     com.raft.server:  DEBUG
+
+
