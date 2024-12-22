@@ -1,17 +1,19 @@
 plugins {
-	id 'org.springframework.boot' version '2.2.4.RELEASE'
+	id 'org.springframework.boot' version '2.5.0'
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id 'java'
+	id("io.freefair.lombok") version "8.11"
 }
+
+group = 'com.raft'
+version = '1.0.0'
+sourceCompatibility = '17'
+
 java {
-	sourceCompatibility = JavaVersion.VERSION_19
-	targetCompatibility = JavaVersion.VERSION_19
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
 }
-tasks.withType(JavaCompile) {
-	sourceCompatibility = '19'
-	targetCompatibility = '19'
-	options.release = 19
-}
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
@@ -25,12 +27,12 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-
 	implementation 'com.github.pleshakoff:simple-network-starter:1.0.3'
-
-	compileOnly 'org.projectlombok:lombok:1.18.30'
-	annotationProcessor 'org.projectlombok:lombok:1.18.30'
+	
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	implementation 'jakarta.validation:jakarta.validation-api:2.0.2'
 
 	implementation  'io.springfox:springfox-swagger-ui:2.9.2'
 	implementation  'io.springfox:springfox-swagger2:2.9.2'
@@ -38,6 +40,7 @@ dependencies {
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+
 }
 
 bootRun {

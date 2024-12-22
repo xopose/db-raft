@@ -1,6 +1,5 @@
 package com.raft.server.database.database.new_db.sql_processor;
 
-
 import com.raft.server.database.database.new_db.Database;
 import com.raft.server.database.database.new_db.exceptions.CantCreateDatabaseException;
 import com.raft.server.database.database.new_db.exceptions.IncorrectCommandException;
@@ -9,11 +8,12 @@ import com.raft.server.database.database.new_db.exceptions.TableNotFoundExceptio
 import java.util.Map;
 
 public class Starter {
-    Database database;
+    private final Database database;
 
-    public Starter(Database database){
+    public Starter(Database database) {
         this.database = database;
     }
+
     public Map<String, String> execute(String request) throws IncorrectCommandException, CantCreateDatabaseException, TableNotFoundException {
         String[] tokens = request.trim().split("(?=([^\"]*\"[^\"]*\")*[^\"]*$)\\s+");
         if (tokens.length == 0) {
@@ -23,6 +23,7 @@ public class Starter {
             tokens[i] = tokens[i].replace("’", "'").replace("‘", "'");
         }
         String command = tokens[0].toUpperCase();
+
         return switch (command) {
             case "SELECT" -> Select.select(tokens, database);
             case "INSERT" -> Insert.insert(tokens, database);

@@ -13,17 +13,17 @@ network:
   services:
     -
       name: 1
-      host: localhost
+      host: raft-server-1
       port: 8081
       version: v1
     -
       name: 2
-      host: localhost
+      host: raft-server-2
       port: 8082
       version: v1
     -
       name: 3
-      host: localhost
+      host: raft-server-3
       port: 8083
       version: v1
 #    -
@@ -46,8 +46,7 @@ logging:
   level:
     com.network.http.rest_template:  ERROR
 
-  main:
-    sources: com.raft.server.ServerApplication
+
 ---
 spring:
   profiles: debug

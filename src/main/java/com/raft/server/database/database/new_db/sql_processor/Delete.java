@@ -46,9 +46,14 @@ public class Delete {
         Map<String, String> executionData = new HashMap<String, String>();
         String command = tokens[1].toUpperCase();
         switch (command) {
-            case "TABLE" -> deleteTable(tokens[2], database);
-            case "FROM" -> deleteFrom(tokens, database, executionData);
-            default -> executionData.put("error", "Unknown command: " + command);
+            case "TABLE":
+                deleteTable(tokens[2], database);
+                break;
+            case "FROM":
+                deleteFrom(tokens, database, executionData);
+                break;
+            default:
+                executionData.put("error", "Unknown command: " + command);
         };
         return executionData;
     }
