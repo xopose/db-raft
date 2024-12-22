@@ -25,7 +25,6 @@ public class SwaggerConfig {
                 .licenseUrl(null)
                 .termsOfServiceUrl("")
                 .version("1.0.0")
-                .contact(new Contact("", "", "pleshakoff@gmail.com"))
                 .build();
     }
 
