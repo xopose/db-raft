@@ -4,6 +4,8 @@ import com.raft.server.database.database.new_db.exceptions.CantCreateDatabaseExc
 import com.raft.server.database.database.new_db.exceptions.TableNotFoundException;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 public interface Database {
 
@@ -36,5 +38,11 @@ public interface Database {
     /**
      * Возвращает список всех таблиц в базе данных.
      */
-    Collection<Table> getAllTables();
+    Map<String, Table> getAllTables();
+
+    //Get commit Index
+    long getCommitIndex();
+
+    //Increment commit Index
+    long incrementCommitIndex();
 }

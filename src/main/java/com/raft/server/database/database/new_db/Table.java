@@ -3,6 +3,8 @@ package com.raft.server.database.database.new_db;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.raft.server.database.database.new_db.exceptions.RecordNotFoundException;
 import com.raft.server.database.database.new_db.utils.Criteria;
 import com.raft.server.database.database.new_db.utils.Index;
@@ -109,4 +111,24 @@ public interface Table {
      * @return Объект индекса или NULL, если индекс не существует.
      */
     Index getIndex(String fieldName);
+
+    //Get commit Index
+    long getCommitIndex();
+
+    //Increment commit Index
+    long incrementCommitIndex();
+
+    /**
+     * Добавляет новую запись, полученную в формате JSON в базу данных.
+     *
+     * @param record Объект записи.
+     */
+    void addRecordFromJson(String record) throws JsonProcessingException;
+
+    /**
+     * Обновляет запись, полученную в формате JSON в базе данных.
+     *
+     * @param record Объект записи.
+     */
+    void updateRecordFromJson(Long id, String record) throws JsonProcessingException;
 }

@@ -1,6 +1,7 @@
 package com.raft.server.context;
 
 
+import com.network.http.Http;
 import com.raft.server.node.Attributes;
 import com.raft.server.node.State;
 import com.raft.server.operations.OperationsLog;
@@ -9,9 +10,11 @@ import com.raft.server.node.peers.Peers;
 import com.raft.server.node.term.Term;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.raft.server.node.State.FOLLOWER;
 
@@ -24,7 +27,7 @@ class ContextImpl implements Context {
     private final Term term;
     private final Attributes attributes;
     private final OperationsLog operationsLog;
-
+    private Http http;
     @Override
     public Integer getId() {
         return attributes.getId();
@@ -133,9 +136,20 @@ class ContextImpl implements Context {
         setVotedFor(null);
     }
 
+    public boolean isLeader() {
+        return getState().equals(State.LEADER);
+    }
 
-
-
-
-
+    public Integer leaderId(){
+        List<Integer> peersIds = getPeers().stream().map(Peer::getId).collect(Collectors.toList());
+        Integer leader = getId();
+        leader = peersIds.stream()
+                .filter(i -> {
+                    ResponseEntity<Boolean> response = http.callGet(i.toString(), Boolean.class, "context", "is_leader");
+                    return response.getBody() != null && response.getBody();
+                })
+                .findFirst()
+                .orElse(leader);
+        return leader;
+    }
 }

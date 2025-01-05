@@ -1,5 +1,7 @@
 package com.raft.server.database.database.new_db.sql_processor;
 
+import com.network.http.Http;
+import com.raft.server.context.Context;
 import com.raft.server.database.database.new_db.Database;
 import com.raft.server.database.database.new_db.exceptions.CantCreateDatabaseException;
 import com.raft.server.database.database.new_db.exceptions.IncorrectCommandException;
@@ -9,9 +11,12 @@ import java.util.Map;
 
 public class Starter {
     private final Database database;
-
-    public Starter(Database database) {
+    private final Context context;
+    private final Http http;
+    public Starter(Database database, Context context, Http http) {
         this.database = database;
+        this.context = context;
+        this.http = http;
     }
 
     public Map<String, String> execute(String request) throws IncorrectCommandException, CantCreateDatabaseException, TableNotFoundException {
@@ -25,11 +30,11 @@ public class Starter {
         String command = tokens[0].toUpperCase();
 
         return switch (command) {
-            case "SELECT" -> Select.select(tokens, database);
-            case "INSERT" -> Insert.insert(tokens, database);
-            case "UPDATE" -> Update.update(tokens, database);
-            case "DELETE" -> Delete.delete(tokens, database);
-            case "CREATE" -> Create.create(tokens, database);
+            case "SELECT" -> Select.select(tokens, database, context);
+            case "INSERT" -> Insert.insert(tokens, database, context, http);
+            case "UPDATE" -> Update.update(tokens, database, context, http);
+            case "DELETE" -> Delete.delete(tokens, database, context, http);
+            case "CREATE" -> Create.create(tokens, database, context, http);
             default -> throw new IncorrectCommandException("Unknown command: " + command);
         };
     }

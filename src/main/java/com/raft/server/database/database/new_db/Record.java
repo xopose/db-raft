@@ -2,10 +2,13 @@ package com.raft.server.database.database.new_db;
 
 
 import java.util.*;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.raft.server.database.database.new_db.deserializers.RecordDeserializer;
 import com.raft.server.database.database.new_db.exceptions.SerializationException;
 import com.raft.server.database.database.new_db.utils.ComparisonCriteria;
 import com.raft.server.database.database.new_db.utils.ComparisonResult;
-
+@JsonDeserialize(using = RecordDeserializer.class)
 public interface Record {
 
     /**

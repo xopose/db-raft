@@ -2,10 +2,10 @@ package com.raft.server.context;
 
 import com.raft.server.node.State;
 import com.raft.server.node.peers.Peer;
+import lombok.Getter;
 
 
 import java.util.List;
-
 
 
 public interface Context {
@@ -49,4 +49,8 @@ public interface Context {
     void setTermGreaterThenCurrent(Long term);
 
     Integer getLastIndex();
+
+    boolean isLeader();
+
+    Integer leaderId();
 }

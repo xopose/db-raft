@@ -2,6 +2,7 @@ package com.raft.server.database.database.new_db.sql_processor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.raft.server.context.Context;
 import com.raft.server.database.database.new_db.Database;
 import com.raft.server.database.database.new_db.Field;
 import com.raft.server.database.database.new_db.Table;
@@ -9,15 +10,16 @@ import com.raft.server.database.database.new_db.exceptions.TableNotFoundExceptio
 import com.raft.server.database.database.new_db.utils.InMemoryCriteria;
 import com.raft.server.database.database.new_db.utils.QueryTokenParser;
 import com.raft.server.database.database.new_db.Record;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
 import static com.raft.server.database.database.helper.Helper.getInMemoryCriteria;
 import static com.raft.server.database.database.new_db.utils.QueryTokenParser.parseQuery;
 
-
+@Slf4j
 public class Select {
-    public static Map<String, String> select(String[] tokens, Database database) {
+    public static Map<String, String> select(String[] tokens, Database database, Context context) {
         Map<String, String> executionData = new HashMap<String, String>();
         try {
             List<String> tokenList = Arrays.asList(tokens);
@@ -33,7 +35,13 @@ public class Select {
                     long id = (long)entry[0];
                     Record record = (Record)entry[1];
                     for(Field field: record.getFields().values()){
-                        if(result.columns().contains(field.getName()) || result.columns().contains("*")){
+                        if(field.getName().startsWith("sumField")) {
+                            rowData.add("sumField" + ": " + table.sumField(field.getName().substring(8, field.getName().length()-1)));
+                        }
+                        else if(field.getName().startsWith("averageField")) {
+                            rowData.add("averageField" + ": " + table.averageField(field.getName().substring(12, field.getName().length()-1)));
+                        }
+                        else if(result.columns().contains(field.getName()) || result.columns().contains("*")){
                             rowData.add(field.getName() + ": " + field.getValue());
                         }
                     }

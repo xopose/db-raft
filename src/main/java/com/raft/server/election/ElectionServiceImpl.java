@@ -6,7 +6,6 @@ import com.network.http.HttpException;
 import com.raft.server.context.Context;
 import com.raft.server.node.peers.Peer;
 import com.raft.server.operations.OperationsLog;
-import com.raft.server.replication.AnswerAppendDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -110,7 +109,6 @@ class ElectionServiceImpl implements ElectionService {
             for (AnswerVoteDTO answer : answers) {
                 if (answer.getStatusCode().equals(OK)) {
                     if (answer.getTerm() > context.getCurrentTerm()) {
-                        //• If RPC request or response contains term T > currentTerm: set currentTerm = T, convert to follower (§5.1)
                         context.setTermGreaterThenCurrent(answer.getTerm());
                         return;
                     }
@@ -154,9 +152,6 @@ class ElectionServiceImpl implements ElectionService {
         if (checkCurrentElectionStatus(term)) {
             log.info("Peer #{} I have WON the election! :)", context.getId());
             context.setState(LEADER);
-
-//        for each server, index of the next operations entry  to send to that server
-//        (initialized to leader last operations index + 1)
             context.getPeers().forEach(peer ->
                                                peer.setNextIndex(operationsLog.getLastIndex() + 1)
 
@@ -183,18 +178,12 @@ class ElectionServiceImpl implements ElectionService {
                  context.getCurrentTerm(),
                  context.getVotedFor());
 
-
-//        1. Reply false if term < currentTerm (§5.1)
-//        2. If votedFor is null or candidateId, and candidate’s operations is at
-//        least as up-to-date as receiver’s operations, grant vote (§5.2, §5.4)
-
         boolean termCheck;
         if (dto.getTerm() < context.getCurrentTerm())
             return new AnswerVoteDTO(context.getId(), context.getCurrentTerm(), false);
         else if (dto.getTerm().equals(context.getCurrentTerm())) {
             termCheck = (context.getVotedFor() == null || context.getVotedFor().equals(dto.getCandidateId()));
         } else {
-            //• If RPC request or response contains term T > currentTerm: set currentTerm = T, convert to follower (§5.1)
             termCheck = true;
             context.setTermGreaterThenCurrent(dto.getTerm());
         }

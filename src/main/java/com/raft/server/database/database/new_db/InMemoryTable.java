@@ -2,28 +2,38 @@ package com.raft.server.database.database.new_db;
 
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raft.server.database.database.new_db.exceptions.RecordNotFoundException;
 import com.raft.server.database.database.new_db.utils.*;
-
+import lombok.extern.slf4j.Slf4j;
+import com.raft.server.database.database.new_db.Record;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-
+@Slf4j
 public class InMemoryTable implements Table {
     private final Map<Long, Record> records = new ConcurrentHashMap<>();
     private final Map<String, Index> indexes = new ConcurrentHashMap<>();
     private final AtomicLong idGenerator = new AtomicLong(0);
     private final Stack<Long> freeIds = new Stack<>();
+
+    private AtomicLong commitIndex = new AtomicLong(0);
     @Override
     public void addRecord(Record record) {
         records.put(nextRecordId(), record);
         indexes.values().forEach(index -> index.indexRecord(record));
+        incrementCommitIndex();
+        log.debug("Table commit Index {}, operation addRecord", getCommitIndex());
     }
 
     @Override
     public void addRecordById(Long id,Record record) {
         records.put(id, record);
         indexes.values().forEach(index -> index.indexRecord(record));
+        incrementCommitIndex();
+        log.debug("Table commit Index {}, operation addRecordById", getCommitIndex());
     }
 
     @Override
@@ -38,6 +48,8 @@ public class InMemoryTable implements Table {
             throw new RecordNotFoundException("Record with ID " + id + " not found.");
         }
         records.put(id, record);
+        incrementCommitIndex();
+        log.debug("Table commit Index {}, operation updateRecord", getCommitIndex());
         indexes.values().forEach(index -> index.updateRecord(oldRecord, record));
     }
 
@@ -47,6 +59,8 @@ public class InMemoryTable implements Table {
         if (removed != null) {
             freeIds.add(id);
             indexes.values().forEach(index -> index.removeRecord(removed));
+            incrementCommitIndex();
+            log.debug("Table commit Index {}, operation deleteRecord", getCommitIndex());
             return true;
         }
         return false;
@@ -130,7 +144,8 @@ public class InMemoryTable implements Table {
         }
         Index index = new InMemoryIndex(fieldName);
         indexes.put(fieldName, index);
-
+        incrementCommitIndex();
+        log.debug("Table commit Index {}, operation createIndex", getCommitIndex());
         records.values().forEach(index::indexRecord);
         return index;
     }
@@ -138,5 +153,51 @@ public class InMemoryTable implements Table {
     @Override
     public Index getIndex(String fieldName) {
         return indexes.get(fieldName);
+    }
+
+    @Override
+    public long getCommitIndex(){
+        return commitIndex.get();
+    }
+
+    @Override
+    public long incrementCommitIndex(){
+        return commitIndex.addAndGet(1);
+    }
+
+
+    @Override
+    public void addRecordFromJson(String data) throws JsonProcessingException {
+        Record record = new InMemoryRecord();
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode rootNode = objectMapper.readTree(data);
+        JsonNode fieldValuesNode = rootNode.get("fieldValues");
+        for (JsonNode fieldNode : fieldValuesNode) {
+            String name = fieldNode.get("name").asText();
+            String value = fieldNode.get("value").asText();
+            record.setField(name, value);
+        }
+        records.put(nextRecordId(), record);
+        indexes.values().forEach(index -> index.indexRecord(record));
+        incrementCommitIndex();
+        log.debug("Table commit Index {}, operation addRecord", getCommitIndex());
+    }
+
+    @Override
+    public void updateRecordFromJson(Long id, String data) throws JsonProcessingException {
+        Record record = new InMemoryRecord();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode rootNode = objectMapper.readTree(data);
+        JsonNode fieldValuesNode = rootNode.get("fieldValues");
+        for (JsonNode fieldNode : fieldValuesNode) {
+            String name = fieldNode.get("name").asText();
+            String value = fieldNode.get("value").asText();
+            record.setField(name, value);
+        }
+        records.put(id, record);
+        indexes.values().forEach(index -> index.indexRecord(record));
+        incrementCommitIndex();
+        log.debug("Table commit Index {}, operation updateRecord", getCommitIndex());
     }
 }
